@@ -2,32 +2,27 @@
 
 This is a simple Hello World API for recruiting purposes. You, as a candidate, should work on the challenge on your own account. Please clone the repo to your account and create a PR with your solution. 
 
-## Introduction
+##Code Changes Description
 
-You can run the application by typing
+Put Request has been implemented to update an existing greeting: 
+Id of an existing greeting must be passed as Path Variable.Id field is optional in the Request Body, however if ID is provided in the request Body it should be the same as the one passed as Path variable
 
-	./gradlew bootRun
+Dao layer has been implemented to have a better architecture(no functional changes) 
 
-This will start up a Spring Boot application with Tomcat server running on 8080.
+Swagger has been implemented
 
-Show all other possible tasks:
+Changes made to POST request: Id has been made optional. If the Id is provided in the request body,the same will be used to store the message else a randomly generated ID will be used
 
-	./gradlew tasks
-	
-## Your Task	
+EntityCreatedResponse is returned from the post operation. Location is provided in the header.
 
-You need to add a new endpoint to the API to allow users to *update the greetings they created*. 
+Junits have been created for the PUT operation. 
 
-## Acceptance Criteria
+Fixed a Junit which was failing earlier
 
-This task is purposefully open-ended. You are free to come up with your own implementation based on your assumptions. You are also welcome to improve the existing code by refactoring, cleaning up, etc. where necessary. Hint: there is a missing core piece in the application :) 
+##Scope for improvement
 
-Extra points for describing a user interface which utilizes the API with the new endpoint. This can be a text document, simple mock-ups, or even an interactive HTML proof-of-concept. Be creative and show us how you approach UI problems.
+Data Persistance can be implemented with the use of Database
+Logging can be implemented
 
-We understand that not everyone has the same amount of "extra" time. It is also up to you to determine the amount of time you spend on the exercise. So that the reviewer understands how you are defining the scope of work, please clearly indicate your own “Definition of Done” for the task in a README file along with any other pertinent information.
 
-Regardless of how far you take the solution towards completion, please assume you are writing production code. Your solution should clearly communicate your development style, abilities, and approach to problem solving. 
-
-Let us know if you have any questions, and we look forward to seeing your approach.
-
-Good Luck!
+ 

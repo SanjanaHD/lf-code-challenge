@@ -2,12 +2,15 @@ package com.labforward.api.hello;
 
 import com.labforward.api.common.MVCIntegrationTest;
 import com.labforward.api.core.GlobalControllerAdvice;
+import com.labforward.api.hello.dao.HelloDao;
 import com.labforward.api.hello.domain.Greeting;
 import com.labforward.api.hello.service.HelloWorldService;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -17,8 +20,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,10 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class HelloControllerTest extends MVCIntegrationTest {
 
 	private static final String HELLO_LUKE = "Hello Luke";
-
+	
+     @Autowired
+     HelloDao helloDao;
+     
+	@Before
+	public void init() {
+		helloDao. saveGreeting(new Greeting("MOCKID", "A mock id for testing"));
+	}
+	
 	@Test
 	public void getHelloIsOKAndReturnsValidJSON() throws Exception {
-		mockMvc.perform(get("/hello"))
+		mockMvc.perform(get("/v1/hello"))
 		       .andExpect(status().isOk())
 		       .andExpect(jsonPath("$.id", is(HelloWorldService.DEFAULT_ID)))
 		       .andExpect(jsonPath("$.message", is(HelloWorldService.DEFAULT_MESSAGE)));
@@ -40,7 +50,7 @@ public class HelloControllerTest extends MVCIntegrationTest {
 	@Test
 	public void returnsBadRequestWhenMessageMissing() throws Exception {
 		String body = "{}";
-		mockMvc.perform(post("/hello").content(body)
+		mockMvc.perform(post("/v1/hello").content(body)
 		                              .contentType(MediaType.APPLICATION_JSON))
 		       .andExpect(status().isUnprocessableEntity())
 		       .andExpect(jsonPath("$.validationErrors", hasSize(1)))
@@ -50,9 +60,9 @@ public class HelloControllerTest extends MVCIntegrationTest {
 	@Test
 	public void returnsBadRequestWhenUnexpectedAttributeProvided() throws Exception {
 		String body = "{ \"tacos\":\"value\" }}";
-		mockMvc.perform(post("/hello").content(body).contentType(MediaType.APPLICATION_JSON))
-		       .andExpect(status().isBadRequest())
-		       .andExpect(jsonPath("$.message", containsString(GlobalControllerAdvice.MESSAGE_UNRECOGNIZED_PROPERTY)));
+		mockMvc.perform(post("/v1/hello").content(body).contentType(MediaType.APPLICATION_JSON))
+		       .andExpect(status().isUnprocessableEntity())
+		       .andExpect(jsonPath("$.message", containsString(GlobalControllerAdvice.BAD_REQUEST)));
 	}
 
 	@Test
@@ -60,7 +70,7 @@ public class HelloControllerTest extends MVCIntegrationTest {
 		Greeting emptyMessage = new Greeting("");
 		final String body = getGreetingBody(emptyMessage);
 
-		mockMvc.perform(post("/hello").content(body)
+		mockMvc.perform(post("/v1/hello").content(body)
 		                              .contentType(MediaType.APPLICATION_JSON))
 		       .andExpect(status().isUnprocessableEntity())
 		       .andExpect(jsonPath("$.validationErrors", hasSize(1)))
@@ -72,13 +82,40 @@ public class HelloControllerTest extends MVCIntegrationTest {
 		Greeting hello = new Greeting(HELLO_LUKE);
 		final String body = getGreetingBody(hello);
 
-		mockMvc.perform(post("/hello").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/v1/hello").contentType(MediaType.APPLICATION_JSON)
 		                              .content(body))
-		       .andExpect(status().isOk())
+		       .andExpect(status().is2xxSuccessful())
 		       .andExpect(jsonPath("$.message", is(hello.getMessage())));
 	}
+	
+	@Test
+	public void returnNotFoundWhenInvalidIdProvided() throws Exception
+	{
+		Greeting hello = new Greeting("1",HELLO_LUKE);
+		final String body = getGreetingBody(hello);
+		
 
-	private String getGreetingBody(Greeting greeting) throws JSONException {
+		mockMvc.perform(put("/v1/hello/1").content(body)
+		                              .contentType(MediaType.APPLICATION_JSON))
+		       .andExpect(status().isNotFound());
+		     
+	}
+	
+	@Test
+	public void returnOkForUpdate() throws Exception
+	{
+		Greeting hello = new Greeting("MOCKID",HELLO_LUKE);
+		final String body = getGreetingBody(hello);
+
+		mockMvc.perform(put("/v1/hello/MOCKID").content(body)
+		                              .contentType(MediaType.APPLICATION_JSON))
+		       .andExpect(status().isOk());
+		     
+	}
+	
+	
+
+private String getGreetingBody(Greeting greeting) throws JSONException {
 		JSONObject json = new JSONObject().put("message", greeting.getMessage());
 
 		if (greeting.getId() != null) {

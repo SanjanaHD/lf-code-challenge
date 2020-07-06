@@ -32,8 +32,11 @@ public class EntityValidator {
 
 		BeanPropertyBindingResult result = new BeanPropertyBindingResult(target, target.getClass().getName());
 
-		// validate ids match
-		if (!id.equals(target.getId())) {
+		/* id in the request body is not a required parameter, 
+		hence the id provided in the path variable has to match the id in the requestBody only if it's provided*/
+
+	
+		if (!id.equals(target.getId())&&target.getId()!=null) {
 			FieldError fieldError = new FieldError(target.getClass().getName(), "id", MESSAGE_NO_ID_MATCH);
 			result.addError(fieldError);
 			throw new EntityValidationException(result);

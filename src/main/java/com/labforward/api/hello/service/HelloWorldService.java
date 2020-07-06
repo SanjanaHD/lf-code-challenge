@@ -1,11 +1,13 @@
 package com.labforward.api.hello.service;
 
 import com.labforward.api.core.validation.EntityValidator;
+import com.labforward.api.hello.dao.HelloDao;
 import com.labforward.api.hello.domain.Greeting;
-import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,44 +20,37 @@ public class HelloWorldService {
 
 	public static String DEFAULT_MESSAGE = "Hello World!";
 
-	private Map<String, Greeting> greetings;
+	@Autowired
+	private HelloDao helloDao;
 
+	@Autowired
 	private EntityValidator entityValidator;
 
-	public HelloWorldService(EntityValidator entityValidator) {
-		this.entityValidator = entityValidator;
+	public HelloWorldService(HelloDao helloDao) {
+		this.helloDao = helloDao;
 
-		this.greetings = new HashMap<>(1);
-		save(getDefault());
-	}
-
-	private static Greeting getDefault() {
-		return new Greeting(DEFAULT_ID, DEFAULT_MESSAGE);
 	}
 
 	public Greeting createGreeting(Greeting request) {
 		entityValidator.validateCreate(request);
-
-		request.setId(UUID.randomUUID().toString());
-		return save(request);
+		if (StringUtils.isEmpty(request.getId())) {
+			request.setId(UUID.randomUUID().toString());
+		}
+		return helloDao.saveGreeting(request);
 	}
 
 	public Optional<Greeting> getGreeting(String id) {
-		Greeting greeting = greetings.get(id);
-		if (greeting == null) {
-			return Optional.empty();
-		}
-
-		return Optional.of(greeting);
+		return helloDao.selectGreeting(id);
 	}
 
 	public Optional<Greeting> getDefaultGreeting() {
 		return getGreeting(DEFAULT_ID);
 	}
 
-	private Greeting save(Greeting greeting) {
-		this.greetings.put(greeting.getId(), greeting);
-
-		return greeting;
+	public Optional<Greeting> updateGreeting(String id, Greeting greetingToBeUpdated) {
+		entityValidator.validateUpdate(id, greetingToBeUpdated);
+		greetingToBeUpdated.setId(id);
+		return helloDao.updateGreeting(id,greetingToBeUpdated);
 	}
+
 }
