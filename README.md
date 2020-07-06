@@ -2,7 +2,7 @@
 
 This is a simple Hello World API for recruiting purposes. You, as a candidate, should work on the challenge on your own account. Please clone the repo to your account and create a PR with your solution. 
 
-##Code Changes Description
+# Code Changes Description
 
 Put Request has been implemented to update an existing greeting: 
 Id of an existing greeting must be passed as Path Variable.Id field is optional in the Request Body, however if ID is provided in the request Body it should be the same as the one passed as Path variable
@@ -19,7 +19,7 @@ Junits have been created for the PUT operation.
 
 Fixed a Junit which was failing earlier
 
-##Scope for improvement
+# Scope for improvement
 
 Data Persistance can be implemented with the use of Database
 Logging can be implemented
