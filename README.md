@@ -21,7 +21,8 @@ Fixed a Junit which was failing earlier
 
 # Scope for improvement
 
-Data Persistance can be implemented with the use of Database
+Data Persistence can be implemented with the use of Database.
+
 Logging can be implemented
 
 
